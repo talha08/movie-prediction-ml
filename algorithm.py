@@ -2,7 +2,10 @@ import csv
 import datetime
 from extract_data import *
 from word_encoder import *
-from sklearn import svm
+# from sklearn import svm
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.svm import SVC
+
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
@@ -46,20 +49,19 @@ while i < len(label):
     i += 1;
 
 # SVM classifier
-svm_clf = svm.SVC(kernel = 'linear')
-svm_clf.fit(encoded_data, scores)
-
+# svm_clf = OneVsRestClassifier(SVC(kernel='linear', probability=True))
+# svm_clf.fit(encoded_data, scores)
 # Gaussian Naive Bayes
-#nb_clf = GaussianNB()
-#nb_clf.fit(encoded_data, scores)
+# nb_clf = GaussianNB()
+# nb_clf.fit(encoded_data, scores)
 
 # Random Forest
-#rf_clf = RandomForestClassifier(n_estimators=100)
-#rf_clf.fit(encoded_data, scores)
+rf_clf = RandomForestClassifier(n_estimators=100)
+rf_clf.fit(encoded_data, scores)
 
 # Decision Tree
-#dt_clf = tree.DecisionTreeClassifier()
-#dt_clf.fit(encoded_data, scores)
+# dt_clf = tree.DecisionTreeClassifier()
+# dt_clf.fit(encoded_data, scores)
 
 
 
@@ -100,16 +102,16 @@ with open('Datasets/Testing Dataset.csv') as f:
         #getting value for mesuare accuracy
         y_true.append(int (float(row['imdb_score']) * 10))
         y_pred.append(column)
-
+        
 
         # calculate error margin for SVM
-        svm_error_margin += abs((svm_clf.predict (test_data)/10.0) - (float(row['imdb_score'])))
+        #svm_error_margin += abs((svm_clf.predict (test_data)/10.0) - (float(row['imdb_score'])))
 
         # calculate error margin for Naive Bayes
         #nb_error_margin += abs((nb_clf.predict (test_data)/10.0) - (float(row['imdb_score'])))
         
         # calculate error margin for Random Forest
-        #rf_error_margin += abs((rf_clf.predict (test_data)/10.0) - (float(row['imdb_score'])))
+        rf_error_margin += abs((rf_clf.predict (test_data)/10.0) - (float(row['imdb_score'])))
         
         # calculate error margin for Decision Tree
         #dt_error_margin += abs((dt_clf.predict (test_data)/10.0) - (float(row['imdb_score'])))
@@ -121,25 +123,45 @@ with open('Datasets/Testing Dataset.csv') as f:
         
 
 #Accuracy for svm
-final_accuracy_svm = accuracy_score(y_true,  svm_clf.predict(encode(y_pred)))
+# final_accuracy_svm = accuracy_score(y_true,  svm_clf.predict(encode(y_pred)))
 #Accuracy for Naive Bayes
 #final_accuracy_nb = accuracy_score(y_true,  nb_clf.predict(encode(y_pred)))
 #Accuracy for Random Forest
-#final_accuracy_rf = accuracy_score(y_true,  rf_clf.predict(encode(y_pred)))
+final_accuracy_rf = accuracy_score(y_true,  rf_clf.predict(encode(y_pred)))
 #Accuracy for Decision Tree
 #final_accuracy_dt = accuracy_score(y_true,  dt_clf.predict(encode(y_pred)))
 
 
 
+
+
+
+
 # Print the error margin
-print("Error margin for Naive Bayes: %0.2f" % (nb_error_margin/count))
-print "Accuracy = ",final_accuracy_nb*100, "%" 
-#print("Error margin for Random Forest: %0.2f" % (rf_error_margin/count))
-#print "Accuracy = ",final_accuracy_rf*100, "%"  
-#print("Error margin for Decision Tree: %0.2f" % (dt_error_margin/count))
-#print "Accuracy = ",final_accuracy_dt*100, "%"
-#print("Error margin for SVM: %0.2f" % (svm_error_margin/count))
-#print "Accuracy = ",final_accuracy_svm*100, "%"
+# print("Error margin for Naive Bayes: %0.2f" % (nb_error_margin/count*10))
+# print "Accuracy = ",final_accuracy_nb*100, "%" 
+print("Error margin for Random Forest: %0.2f" % (rf_error_margin/count*10))
+print "Accuracy = ",final_accuracy_rf*100, "%"  
+# print("Error margin for SVM: %0.2f" % (svm_error_margin/count*10))
+# print "Accuracy = ",final_accuracy_svm*100, "%"
+# print "Error margin for Decision Tree=" ,dt_error_margin/count*10, "%" 
+# print "Accuracy = ",final_accuracy_dt*100, "%"
+
+
+
+
+
+
+#prediction
+#final_pre = dt_clf.predict(encode(y_pred))
+final_pre = rf_clf.predict(encode([['Date With You', 'John August', 'Color', 'Jon Gunn', '43', '90', '16', '16', 'Brian Herzlinger', '86', '85222', 'Documentary', '4285', '163', 'Jon Gunn', '84', 'English', 'USA', '1100', '2004', '23', '456']]))
+
+
+#prediction print
+str1 = " ".join(str(x) for x in final_pre)
+print "Predicted Rating = ", float(str1)/10
+
+
 
 
 
